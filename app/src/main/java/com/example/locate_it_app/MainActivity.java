@@ -1,5 +1,6 @@
 package com.example.locate_it_app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -41,7 +42,8 @@ public class MainActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(view -> LonginUser());
 
         tvRegistrar.setOnClickListener(view -> {
-            Toast.makeText(this, "Ir a registro", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
+            startActivity(intent);
         });
 
 

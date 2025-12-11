@@ -26,6 +26,9 @@
 
         <!-- 1. ACTIVITY DE INICIO: AHORA ES MainActivity -->
         <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <!-- El intent-filter se mueve aquí para que esta sea la actividad principal -->
