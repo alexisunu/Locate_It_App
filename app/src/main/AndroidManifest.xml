@@ -49,6 +49,9 @@
         <activity
             android:name=".lugares_mapa"
             android:exported="false" />
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
 
     </application>
 

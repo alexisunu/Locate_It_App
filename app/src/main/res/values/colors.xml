@@ -1,8 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Colores Base -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="colorPrimary">#D32F2F</color> <!-- Este es el rojo anterior -->
-    <color name="colorPrimaryBlue">#1976D2</color> <!-- ¡ESTE ES EL NUEVO COLOR! -->
+
+    <!-- Colores de la App (Viejos y Nuevos) -->
+    <color name="colorPrimaryOld">#D32F2F</color>
+    <color name="red">#D32F2F</color>
+    <color name="colorPrimaryBlue">#1976D2</color>
     <color name="icon_color_unselected">#E0E0E0</color>
+
+    <!-- Nuevos Colores para Login y Register -->
+    <color name="login_background">#2A3F75</color>
+    <color name="login_button_color">#4A3F6D</color>
+    <color name="register_background">#F5F5F5</color>
+    <color name="register_button_color">#304FFE</color>
+    <color name="link_color">#448AFF</color>
+    <color name="text_hint_color">#9E9E9E</color>
+    <color name="text_input_color">#333333</color>
+
 </resources>

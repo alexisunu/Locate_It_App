@@ -9,9 +9,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -20,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private EditText etEmail, etPassword;
-    private Button btnLogin, btnRegister;
+    private Button btnLogin;
     private TextView tvRegistrar;
 
     @Override
@@ -29,31 +26,34 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // Inicializar firebase
         mAuth = FirebaseAuth.getInstance();
 
-        //Vinclar vistas
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         tvRegistrar = findViewById(R.id.tvRegistrar);
 
-        //Configurar boton Login
-        btnLogin.setOnClickListener(view -> LonginUser());
+        btnLogin.setOnClickListener(view -> loginUser());
 
         tvRegistrar.setOnClickListener(view -> {
             Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
             startActivity(intent);
         });
-
-
     }
 
-    public void LonginUser(){
-        String email = etEmail.getText().toString();
-        String password = etPassword.getText().toString();
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            goToDashboard();
+        }
+    }
 
-        //validaciones
+    private void loginUser(){
+        String email = etEmail.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
+
         if(email.isEmpty() || password.isEmpty()){
             Toast.makeText(this, "Por favor ingrese todos los campos", Toast.LENGTH_SHORT).show();
             return;
@@ -65,27 +65,17 @@ public class MainActivity extends AppCompatActivity {
 
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
-                FirebaseUser user = mAuth.getCurrentUser();
                 Toast.makeText(this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
-                // Ir al Dashboard
-                Intent intent = new Intent(MainActivity.this, dashboard.class);
-                startActivity(intent);
-
+                goToDashboard();
             } else {
-                Toast.makeText(this, "Error en el inicio de sesión", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Error en el inicio de sesión. Verifique sus credenciales.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // Verificar si ya hay un usuario logueado
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            // Usuario ya está logueado, ir al Dashboard
-            Toast.makeText(this, "Ya tienes sesión activa", Toast.LENGTH_SHORT).show();
-            // goToDashboard(); // Descomenta cuando crees el Dashboard
-        }
+    private void goToDashboard() {
+        Intent intent = new Intent(MainActivity.this, dashboard.class);
+        startActivity(intent);
+        finish();
     }
 }
