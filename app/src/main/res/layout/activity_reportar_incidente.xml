@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    tools:context=".ReportarIncidente">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Barra superior -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="#F44336"
+            android:padding="12dp">
+
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/arrow"
+                app:tint="#FFFFFF" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="Reportar Incidente"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <!-- Mapa -->
+        <org.osmdroid.views.MapView
+            android:id="@+id/mapIncidente"
+            android:layout_width="match_parent"
+            android:layout_height="200dp" />
+
+        <!-- Tipo de Incidente -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_margin="12dp"
+            android:background="#FFCDD2"
+            android:padding="12dp"
+            android:elevation="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tipo de Incidente"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+
+            <RadioGroup
+                android:id="@+id/rgTipoIncidente"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp">
+
+                <RadioButton
+                    android:id="@+id/rbRobo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Robo" />
+
+                <RadioButton
+                    android:id="@+id/rbAccidente"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Accidente" />
+
+                <RadioButton
+                    android:id="@+id/rbIncendio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Incendio" />
+
+                <RadioButton
+                    android:id="@+id/rbOtro"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Otro" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <!-- Foto (ACTUALIZADO) -->
+        <LinearLayout
+            android:id="@+id/btnAgregarFotoIncidente"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_margin="12dp"
+            android:gravity="center"
+            android:background="#EEEEEE"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <!-- Imagen capturada (inicialmente oculta) -->
+            <ImageView
+                android:id="@+id/ivAgregarFotoIncidente"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+
+            <!-- Ícono de cámara -->
+            <ImageView
+                android:id="@+id/iconoCamara"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/camara"
+                app:tint="#000000" />
+
+            <!-- Texto -->
+            <TextView
+                android:id="@+id/txtAgregarFoto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Agregar Foto"
+                android:textColor="#000000"
+                android:paddingTop="6dp"/>
+        </LinearLayout>
+
+        <!-- Botón Reportar -->
+        <Button
+            android:id="@+id/btnReportarIncidente"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_margin="12dp"
+            android:text="Reportar Incidente"
+            android:textAllCaps="false"
+            app:backgroundTint="#D32F2F"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            app:cornerRadius="8dp" />
+    </LinearLayout>
+</ScrollView>

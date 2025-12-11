@@ -1,6 +1,7 @@
 package com.example.locate_it_app;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -71,7 +72,8 @@ public class incidentes_mapa extends AppCompatActivity {
         FloatingActionButton fabAddIncident = findViewById(R.id.fab_add_incident);
         fabAddIncident.setOnClickListener(view -> {
             // Lógica futura para la activity de registrar incidente
-            Toast.makeText(this, "Registrar Incidente (próximamente)", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, ReportarIncidente.class);
+            startActivity(intent);
         });
 
         // Ya no necesitamos un listener para la BottomNavigationView ya que no tiene items seleccionables.
