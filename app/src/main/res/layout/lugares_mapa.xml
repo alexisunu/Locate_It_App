@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -5,13 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".lugares_mapa">
 
-    <!-- VISTA DE MAPA DE OSMDROID -->
+    <!-- 1. El Mapa que ocupa toda la pantalla -->
     <org.osmdroid.views.MapView
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Barra de aplicación inferior que crea la muesca automáticamente -->
+    <!-- 2. La barra inferior con la muesca -->
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottom_app_bar"
         android:layout_width="match_parent"
@@ -23,7 +24,7 @@
         app:fabCradleRoundedCornerRadius="28dp"
         app:hideOnScroll="true">
 
-        <!-- La BottomNavigationView que va DENTRO del BottomAppBar -->
+        <!-- El menú de navegación que el código Java busca -->
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_navigation"
             android:layout_width="match_parent"
@@ -36,17 +37,7 @@
 
     </com.google.android.material.bottomappbar.BottomAppBar>
 
-    <!-- Texto para "Registrar Lugar", anclado a la barra -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Registrar Lugar"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="4dp"
-        app:layout_anchor="@id/bottom_app_bar"
-        app:layout_anchorGravity="bottom|center" />
-
-    <!-- Botón flotante de la CÁMARA que sobresale -->
+    <!-- 3. El botón flotante para AÑADIR LUGAR que el código Java busca -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_place"
         android:layout_width="wrap_content"
@@ -57,7 +48,7 @@
         app:srcCompat="@drawable/ic_menu_camera"
         app:tint="@android:color/white" />
 
-    <!-- Botón flotante para centrar la ubicación -->
+    <!-- 4. El botón flotante para CENTRAR UBICACIÓN que el código Java busca -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_center_location"
         android:layout_width="wrap_content"

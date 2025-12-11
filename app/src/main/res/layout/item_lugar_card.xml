@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="220dp"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Imagen de Fondo -->
+        <ImageView
+            android:id="@+id/iv_lugar_background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            tools:src="@tools:sample/backgrounds/scenic" />
+
+        <!-- Capa de Sombra Única (Scrim) -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#60000000" />
+
+        <!-- Contenido de Texto -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tv_lugar_nombre"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:text="Nombre del lugar" />
+
+            <TextView
+                android:id="@+id/tv_lugar_direccion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#E0E0E0"
+                android:textSize="14sp"
+                tools:text="Buscando dirección..." />
+
+            <TextView
+                android:id="@+id/tv_lugar_descripcion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#E0E0E0"
+                android:textSize="14sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Descripción" />
+        </LinearLayout>
+
+        <!-- Temperatura -->
+        <TextView
+            android:id="@+id/tv_lugar_temperatura"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="16dp"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            tools:text="--" />
+
+        <!-- Botones inferiores -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_categoria"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Categoría"
+                android:textColor="#333333"
+                app:chipBackgroundColor="#FFFFFF"/>
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_ver_mapa"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ver en Mapa"
+                android:textColor="#333333"
+                android:backgroundTint="#FFFFFF" />
+            
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_whatsapp"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:text="WhatsApp"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#4CAF50"
+                app:icon="@drawable/ic_whatsapp"
+                app:iconTint="@android:color/white"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+</com.google.android.material.card.MaterialCardView>

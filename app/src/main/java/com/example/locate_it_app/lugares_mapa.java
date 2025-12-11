@@ -3,6 +3,9 @@ package com.example.locate_it_app;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -17,15 +20,22 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 public class lugares_mapa extends AppCompatActivity {
+
+    private static final String TAG = "LUGAR_MAPA_DEBUG";
 
     private MapView map = null;
     private FusedLocationProviderClient fusedLocationClient;
@@ -33,26 +43,27 @@ public class lugares_mapa extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private GeoPoint currentLocation;
 
+    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // --- IMPORTANTE: Configuración de OSMDroid ---
         Configuration.getInstance().load(getApplicationContext(), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
-
         setContentView(R.layout.lugares_mapa);
 
-        // --- Inicialización del Mapa ---
         map = findViewById(R.id.map);
-        map.setTileSource(TileSourceFactory.MAPNIK); // Establece el proveedor de losetas del mapa
-        map.setMultiTouchControls(true); // Permite hacer zoom con los dedos
-        map.getController().setZoom(15.0); // Establece un zoom inicial
+        map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setMultiTouchControls(true);
+        map.getController().setZoom(15.0);
 
-        // Inicializa el cliente de ubicación
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         checkLocationPermission();
         setupButtonClickListeners();
+        loadUserPlaces();
     }
 
     private void checkLocationPermission() {
@@ -66,8 +77,7 @@ public class lugares_mapa extends AppCompatActivity {
 
     private void setupLocationOverlay() {
         myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this), map);
-        myLocationOverlay.enableMyLocation(); // Habilita el seguimiento de la ubicación
-        myLocationOverlay.setDrawAccuracyEnabled(true); // Dibuja el círculo de precisión
+        myLocationOverlay.enableMyLocation();
         map.getOverlays().add(myLocationOverlay);
     }
 
@@ -77,12 +87,10 @@ public class lugares_mapa extends AppCompatActivity {
                 if (location != null) {
                     currentLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
                     map.getController().animateTo(currentLocation);
-                } else {
-                    Log.d("MapActivity", "La ubicación actual es nula.");
                 }
             });
         } catch (SecurityException e) {
-            Log.e("MapActivity", "Error de seguridad", e);
+            Log.e(TAG, "Error de seguridad al obtener ubicación", e);
         }
     }
 
@@ -91,60 +99,134 @@ public class lugares_mapa extends AppCompatActivity {
         fabCenterLocation.setOnClickListener(view -> {
             if (currentLocation != null) {
                 map.getController().animateTo(currentLocation);
-                Toast.makeText(this, "Centrando ubicación", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Ubicación no disponible aún.", Toast.LENGTH_SHORT).show();
             }
         });
 
         FloatingActionButton fabAddPlace = findViewById(R.id.fab_add_place);
-        fabAddPlace.setOnClickListener(view -> {
-            startActivity(new Intent(this, GuardarLugar.class));
-        });
+        fabAddPlace.setOnClickListener(view -> 
+            startActivity(new Intent(this, GuardarLugar.class)));
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
-        // Hacemos que el item del medio no sea seleccionable
-
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
+            // --- LÓGICA MODIFICADA ---
             if (itemId == R.id.nav_share_place) {
                 Toast.makeText(this, "Compartir Lugar (próximamente)", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (itemId == R.id.nav_my_places) {
-                Toast.makeText(this, "Mis Lugares (próximamente)", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, ListaLugaresActivity.class));
                 return true;
             }
             return false;
         });
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                setupLocationOverlay();
-                getDeviceLocation();
+    private void loadUserPlaces() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Log.e(TAG, "¡ERROR CRÍTICO! No hay usuario autenticado para cargar lugares.");
+            return;
+        }
+        String userId = currentUser.getUid();
+
+        db.collection("places").whereEqualTo("userId", userId).get()
+            .addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    if (task.getResult().isEmpty()) {
+                        Log.w(TAG, "No se encontró ningún lugar para este usuario.");
+                        return;
+                    }
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        addPlaceMarkerToMap(document);
+                    }
+                    map.invalidate();
+                } else {
+                    Log.e(TAG, "FALLO la consulta a Firestore: ", task.getException());
+                }
+            });
+    }
+
+    private void addPlaceMarkerToMap(QueryDocumentSnapshot document) {
+        try {
+            String nombre = document.getString("nombre");
+            String categoria = document.getString("categoria");
+            Double latitud = document.getDouble("latitud");
+            Double longitud = document.getDouble("longitud");
+            String lugarId = document.getId();
+
+            if (nombre != null && latitud != null && longitud != null && categoria != null) {
+                GeoPoint placeLocation = new GeoPoint(latitud, longitud);
+                Marker placeMarker = new Marker(map);
+                placeMarker.setPosition(placeLocation);
+                placeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                placeMarker.setTitle(nombre);
+
+                placeMarker.setIcon(getIconForCategory(categoria));
+
+                placeMarker.setRelatedObject(lugarId);
+                placeMarker.setOnMarkerClickListener((marker, mapView) -> {
+                    String clickedLugarId = (String) marker.getRelatedObject();
+                    Intent intent = new Intent(lugares_mapa.this, LugarDetalleActivity.class);
+                    intent.putExtra(LugarDetalleActivity.EXTRA_LUGAR_ID, clickedLugarId);
+                    startActivity(intent);
+                    return true;
+                });
+                map.getOverlays().add(placeMarker);
             } else {
-                Toast.makeText(this, "El permiso de ubicación es necesario para mostrar el mapa.", Toast.LENGTH_LONG).show();
+                Log.w(TAG, "Documento " + lugarId + " OMITIDO por tener datos nulos.");
             }
+        } catch (Exception e) {
+            Log.e(TAG, "EXCEPCIÓN al procesar el documento: " + document.getId(), e);
         }
     }
 
-    // --- Ciclo de vida para OSMDroid ---
+    private Drawable getIconForCategory(String category) {
+        Drawable icon = ContextCompat.getDrawable(this, org.osmdroid.library.R.drawable.marker_default).mutate();
+        int color;
+
+        switch (category.toLowerCase()) {
+            case "casa":
+                color = Color.parseColor("#008F39"); // Verde
+                break;
+            case "trabajo":
+                color = Color.parseColor("#2A7FF3"); // Azul
+                break;
+            case "restaurante":
+                color = Color.parseColor("#F3632A"); // Naranja
+                break;
+            case "parque":
+                color = Color.parseColor("#4CAF50"); // Verde claro
+                break;
+            default:
+                color = Color.parseColor("#8E8E8E"); // Gris para "Otro"
+                break;
+        }
+
+        icon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        return icon;
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            setupLocationOverlay();
+            getDeviceLocation();
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        if (map != null) {
-            map.onResume(); // Necesario para el mapa
-        }
+        if (map != null) map.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (map != null) {
-            map.onPause(); // Necesario para el mapa
-        }
+        if (map != null) map.onPause();
     }
 }
