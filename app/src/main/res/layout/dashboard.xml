@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="16dp"
+    tools:context=".dashboard">
+
+    <!-- Tarjeta de Perfil de Usuario -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="32dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="24dp">
+
+            <!-- ImageView para la foto de perfil (usamos CardView para hacerla circular) -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                app:cardCornerRadius="50dp">
+
+                <ImageView
+                    android:id="@+id/ivProfilePhoto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_default_profile"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="Foto de perfil del usuario" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- TextView para el nombre del usuario -->
+            <TextView
+                android:id="@+id/tvUserName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Nombre de Usuario"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <!-- TextView para el correo del usuario -->
+            <TextView
+                android:id="@+id/tvUserEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="usuario@correo.com"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Botones de Navegación -->
+    <Button
+        android:id="@+id/btnGoToLugares"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:backgroundTint="@color/colorPrimaryBlue"
+        android:padding="14dp"
+        android:text="Ver Mis Lugares"
+        android:textColor="@android:color/white" />
+
+    <Button
+        android:id="@+id/btnGoToIncidentes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:backgroundTint="@color/colorPrimaryBlue"
+        android:padding="14dp"
+        android:text="Reportar un Incidente"
+        android:textColor="@android:color/white" />
+
+    <Button
+        android:id="@+id/btnGoToProfile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorPrimaryBlue"
+        android:padding="14dp"
+        android:text="Gestionar Perfil"
+        android:textColor="@android:color/white" />
+
+    <!-- Usamos un Space para empujar el botón de logout hacia abajo -->
+    <Space
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Botón para Cerrar Sesión -->
+
+</LinearLayout>

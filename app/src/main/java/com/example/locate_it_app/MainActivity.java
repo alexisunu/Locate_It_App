@@ -67,6 +67,10 @@ public class MainActivity extends AppCompatActivity {
             if (task.isSuccessful()) {
                 FirebaseUser user = mAuth.getCurrentUser();
                 Toast.makeText(this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
+                // Ir al Dashboard
+                Intent intent = new Intent(MainActivity.this, dashboard.class);
+                startActivity(intent);
+
             } else {
                 Toast.makeText(this, "Error en el inicio de sesión", Toast.LENGTH_SHORT).show();
             }
