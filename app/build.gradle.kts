@@ -61,4 +61,9 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("de.hdodenhof:circleimageview:3.1.0")
+
+    // Cloudinary para subir imágenes
+    implementation("com.cloudinary:cloudinary-android:2.5.0")
+    // OkHttp (requerido por Cloudinary)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }

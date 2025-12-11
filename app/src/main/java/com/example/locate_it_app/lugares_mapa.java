@@ -1,6 +1,7 @@
 package com.example.locate_it_app;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -14,6 +15,7 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.osmdroid.config.Configuration;
@@ -36,19 +38,18 @@ public class lugares_mapa extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // --- IMPORTANTE: Configuración de OSMDroid ---
-        // Esto es necesario para evitar problemas de "User-Agent" y de almacenamiento en caché.
         Configuration.getInstance().load(getApplicationContext(), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
 
         setContentView(R.layout.lugares_mapa);
-
-        // Inicializa el cliente de ubicación
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         // --- Inicialización del Mapa ---
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK); // Establece el proveedor de losetas del mapa
         map.setMultiTouchControls(true); // Permite hacer zoom con los dedos
         map.getController().setZoom(15.0); // Establece un zoom inicial
+
+        // Inicializa el cliente de ubicación
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         checkLocationPermission();
         setupButtonClickListeners();
@@ -98,10 +99,10 @@ public class lugares_mapa extends AppCompatActivity {
 
         FloatingActionButton fabAddPlace = findViewById(R.id.fab_add_place);
         fabAddPlace.setOnClickListener(view -> {
-            Toast.makeText(this, "Registrar Lugar (próximamente)", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, GuardarLugar.class));
         });
 
-        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         // Hacemos que el item del medio no sea seleccionable
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -116,9 +117,6 @@ public class lugares_mapa extends AppCompatActivity {
             return false;
         });
     }
-
-
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

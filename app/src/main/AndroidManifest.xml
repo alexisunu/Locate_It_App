@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- PERMISOS DE UBICACIÓN E INTERNET (YA ESTABAN) -->
+    <!-- PERMISOS DE UBICACIÓN E INTERNET -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -10,7 +10,6 @@
 
     <!-- ¡PERMISOS DE CÁMARA AÑADIDOS! -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <!-- Es buena práctica declarar las características que usa tu app -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
 
@@ -24,24 +23,23 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Locate_It_App">
 
-        <!-- 1. ACTIVITY DE INICIO: AHORA ES MainActivity -->
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
         <activity
+            android:name=".GuardarLugar"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
-            <!-- El intent-filter se mueve aquí para que esta sea la actividad principal -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!-- DECLARACIÓN DEL DASHBOARD -->
         <activity
             android:name=".dashboard"
             android:exported="false" />
-        <!-- 2. Las otras activities, declaradas normalmente -->
         <activity
             android:name=".incidentes_mapa"
             android:exported="false" />
@@ -52,6 +50,17 @@
         <activity
             android:name=".ProfileActivity"
             android:exported="false" />
+
+        <!-- FileProvider para compartir archivos de forma segura -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.locate_it_app.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_path" />
+        </provider>
 
     </application>
 
