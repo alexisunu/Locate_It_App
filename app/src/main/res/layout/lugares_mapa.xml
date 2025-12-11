@@ -1,0 +1,73 @@
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".lugares_mapa">
+
+    <!-- VISTA DE MAPA DE OSMDROID -->
+    <org.osmdroid.views.MapView
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Barra de aplicación inferior que crea la muesca automáticamente -->
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/bottom_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:backgroundTint="@color/colorPrimaryBlue"
+        app:fabAlignmentMode="center"
+        app:fabCradleMargin="10dp"
+        app:fabCradleRoundedCornerRadius="28dp"
+        app:hideOnScroll="true">
+
+        <!-- La BottomNavigationView que va DENTRO del BottomAppBar -->
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            app:itemIconTint="@color/bottom_nav_item_color_selector"
+            app:itemTextColor="@color/bottom_nav_item_color_selector"
+            style="@style/BottomNavTextStyle"
+            app:menu="@menu/bottom_nav_menu" />
+
+    </com.google.android.material.bottomappbar.BottomAppBar>
+
+    <!-- Texto para "Registrar Lugar", anclado a la barra -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Registrar Lugar"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="4dp"
+        app:layout_anchor="@id/bottom_app_bar"
+        app:layout_anchorGravity="bottom|center" />
+
+    <!-- Botón flotante de la CÁMARA que sobresale -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_place"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Registrar un nuevo lugar"
+        app:backgroundTint="@color/colorPrimaryBlue"
+        app:layout_anchor="@id/bottom_app_bar"
+        app:srcCompat="@drawable/ic_menu_camera"
+        app:tint="@android:color/white" />
+
+    <!-- Botón flotante para centrar la ubicación -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_center_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="90dp"
+        android:contentDescription="Centrar en mi ubicación"
+        app:backgroundTint="@android:color/white"
+        app:srcCompat="@drawable/ic_my_location"
+        app:tint="@color/colorPrimaryBlue" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
