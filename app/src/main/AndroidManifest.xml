@@ -37,7 +37,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <!-- DECLARACIÓN DEL DASHBOARD -->
+        <activity
+            android:name=".dashboard"
+            android:exported="false" />
         <!-- 2. Las otras activities, declaradas normalmente -->
         <activity
             android:name=".incidentes_mapa"
