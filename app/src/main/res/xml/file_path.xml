@@ -3,4 +3,8 @@
     <external-files-path
         name="fotos_lugares"
         path="fotos_lugares/" />
+
+    <external-files-path
+        name="fotos_incidentes"
+        path="fotos_incidentes/" />
 </paths>
