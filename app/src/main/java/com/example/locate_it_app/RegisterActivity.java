@@ -1,164 +1,143 @@
 package com.example.locate_it_app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private EditText etNombre, etEmail, etPassword, etConfirmPassword;
+    private EditText etName, etEmail, etPassword, etConfirmPassword;
     private Button btnRegister;
     private TextView tvLogin;
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_register);
 
-        // Firebase
+        // Inicializar Firebase
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
-        // Vincular vistas
-        etNombre = findViewById(R.id.etNombre);
-        etEmail = findViewById(R.id.etEmailReg);
-        etPassword = findViewById(R.id.etPasswordReg);
-        etConfirmPassword = findViewById(R.id.etConfirmPasswordReg);
+        // Vincular vistas con los nuevos IDs
+        etName = findViewById(R.id.etName);
+        etEmail = findViewById(R.id.etEmail);
+        etPassword = findViewById(R.id.etPassword);
+        etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnRegister = findViewById(R.id.btnRegister);
         tvLogin = findViewById(R.id.tvLogin);
 
+        // Listeners
         btnRegister.setOnClickListener(v -> registerUser());
-
-        tvLogin.setOnClickListener(v -> finish());
+        tvLogin.setOnClickListener(v -> {
+            // Vuelve a la actividad de Login
+            finish();
+        });
     }
 
     private void registerUser() {
-        String nombre = etNombre.getText().toString().trim();
+        String name = etName.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString();
-        String confirm = etConfirmPassword.getText().toString();
+        String password = etPassword.getText().toString().trim();
+        String confirmPassword = etConfirmPassword.getText().toString().trim();
 
         // Validaciones
-        if (nombre.isEmpty()) {
-            etNombre.setError("Ingrese su nombre completo");
-            etNombre.requestFocus();
+        if (name.isEmpty()) {
+            etName.setError("El nombre es requerido");
+            etName.requestFocus();
             return;
         }
+
         if (email.isEmpty()) {
-            etEmail.setError("Ingrese su correo");
+            etEmail.setError("El correo es requerido");
             etEmail.requestFocus();
             return;
         }
+
         if (password.isEmpty()) {
-            etPassword.setError("Ingrese una contraseña");
+            etPassword.setError("La contraseña es requerida");
             etPassword.requestFocus();
             return;
         }
+
         if (password.length() < 6) {
-            etPassword.setError("Debe tener al menos 6 caracteres");
+            etPassword.setError("La contraseña debe tener al menos 6 caracteres");
             etPassword.requestFocus();
             return;
         }
-        if (!password.equals(confirm)) {
+
+        if (!password.equals(confirmPassword)) {
             etConfirmPassword.setError("Las contraseñas no coinciden");
             etConfirmPassword.requestFocus();
             return;
         }
 
-        // Verificar si el correo ya existe
-        mAuth.fetchSignInMethodsForEmail(email)
-                .addOnCompleteListener(fetchTask -> {
-                    if (!fetchTask.isSuccessful()) {
-                        Toast.makeText(this,
-                                "Error al verificar correo: " + fetchTask.getException(),
-                                Toast.LENGTH_LONG).show();
-                        return;
+        // Crear usuario en Firebase Auth
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                        if (firebaseUser != null) {
+                            // Guardar información adicional en Firestore
+                            saveUserInFirestore(firebaseUser, name, email);
+                        } else {
+                            Toast.makeText(RegisterActivity.this, "No se pudo obtener el usuario después del registro.", Toast.LENGTH_LONG).show();
+                        }
+                    } else {
+                        Toast.makeText(RegisterActivity.this, "Error en el registro: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
+                });
+    }
 
-                    List<String> methods = fetchTask.getResult().getSignInMethods();
+    private void saveUserInFirestore(FirebaseUser firebaseUser, String name, String email) {
+        String uid = firebaseUser.getUid();
 
-                    if (methods != null && !methods.isEmpty()) {
-                        Toast.makeText(this,
-                                "Este correo ya está registrado.",
-                                Toast.LENGTH_LONG).show();
-                        return;
-                    }
+        // Crear mapa con datos del usuario
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("nombre", name);
+        userMap.put("email", email);
+        userMap.put("fotoPerfil", ""); // URL de foto de perfil vacía por defecto
+        userMap.put("fechaRegistro", Timestamp.now());
+        userMap.put("placesCount", 0);
+        userMap.put("incidentsCount", 0);
 
-                    // Crear usuario
-                    mAuth.createUserWithEmailAndPassword(email, password)
-                            .addOnCompleteListener(task -> {
-                                if (!task.isSuccessful()) {
-                                    Exception e = task.getException();
-                                    if (e instanceof FirebaseAuthUserCollisionException) {
-                                        Toast.makeText(this,
-                                                "Este correo ya está registrado.",
-                                                Toast.LENGTH_LONG).show();
-                                    } else {
-                                        Toast.makeText(this,
-                                                "Error: " + e.getMessage(),
-                                                Toast.LENGTH_LONG).show();
-                                    }
-                                    return;
-                                }
+        // Guardar en Firestore
+        db.collection("users").document(uid)
+                .set(userMap)
+                .addOnSuccessListener(aVoid -> {
+                    // Actualizar nombre en el perfil de Firebase Auth
+                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                            .setDisplayName(name)
+                            .build();
+                    firebaseUser.updateProfile(profileUpdates);
 
-                                FirebaseUser user = mAuth.getCurrentUser();
-                                if (user == null) {
-                                    Toast.makeText(this,
-                                            "Error: usuario es null.",
-                                            Toast.LENGTH_LONG).show();
-                                    return;
-                                }
-
-                                // Actualizar nombre en Auth
-                                UserProfileChangeRequest profileUpdates =
-                                        new UserProfileChangeRequest.Builder()
-                                                .setDisplayName(nombre)
-                                                .build();
-
-                                user.updateProfile(profileUpdates);
-
-                                // Guardar en Firestore
-                                FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-                                Map<String, Object> userMap = new HashMap<>();
-                                userMap.put("nombre", nombre);
-                                userMap.put("email", email);
-                                userMap.put("fotoPerfil", null);
-                                userMap.put("fechaRegistro", Timestamp.now()); // 🔥 Timestamp real
-
-                                db.collection("users")
-                                        .document(user.getUid())
-                                        .set(userMap)
-                                        .addOnSuccessListener(aVoid -> {
-                                            Toast.makeText(this,
-                                                    "Usuario registrado correctamente",
-                                                    Toast.LENGTH_SHORT).show();
-                                            finish();
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            Toast.makeText(this,
-                                                    "Error al guardar usuario: " + e.getMessage(),
-                                                    Toast.LENGTH_LONG).show();
-                                        });
-                            });
+                    Toast.makeText(RegisterActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+                    
+                    // Ir al Dashboard
+                    Intent intent = new Intent(RegisterActivity.this, dashboard.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(RegisterActivity.this, "Error al guardar datos: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 }
