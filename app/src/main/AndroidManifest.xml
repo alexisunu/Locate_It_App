@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Locate_It_App">
         <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
