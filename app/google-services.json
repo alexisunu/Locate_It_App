@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "834215904308",
+    "project_id": "locateit-31c6d",
+    "storage_bucket": "locateit-31c6d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:834215904308:android:fcfacc069a7a403e6b3661",
+        "android_client_info": {
+          "package_name": "com.example.locate_it_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOO5cmzFzJFMT-zFo_u2xG2-fOkF7vBJ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
