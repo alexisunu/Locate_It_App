@@ -1,0 +1,69 @@
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".incidentes_mapa"> <!-- CONTEXTO APUNTA A TU CLASE -->
+
+    <!-- El Mapa -->
+    <org.osmdroid.views.MapView
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- El BottomAppBar que crea la muesca -->
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/bottom_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:backgroundTint="#D32F2F"
+        app:fabAlignmentMode="center"
+        app:fabCradleMargin="10dp"
+        app:fabCradleRoundedCornerRadius="28dp"
+        app:hideOnScroll="true">
+
+        <!-- La BottomNavigationView que apunta al MENÚ SIMPLE -->
+
+    </com.google.android.material.bottomappbar.BottomAppBar>
+
+    <!-- El FloatingActionButton -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_incident"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Registrar un nuevo incidente"
+        app:backgroundTint="#D32F2F"
+        app:layout_anchor="@id/bottom_app_bar"
+        app:srcCompat="@drawable/ic_menu_camera"
+        app:tint="@android:color/white" />
+
+    <!-- El Texto debajo de la muesca -->
+    <TextView
+        android:id="@+id/fab_text_incident"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Registrar Incidente"
+        android:textColor="@android:color/white"
+        android:textSize="12sp"
+        android:elevation="16dp"
+        android:clickable="false"
+        app:layout_anchor="@id/bottom_app_bar"
+        app:layout_anchorGravity="bottom|center"
+        android:layout_marginBottom="4dp"/>
+
+    <!-- El botón para centrar -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_center_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="90dp"
+        android:contentDescription="Centrar en mi ubicación"
+        app:backgroundTint="@android:color/white"
+        app:srcCompat="@drawable/ic_my_location"
+        app:tint="#D32F2F" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
