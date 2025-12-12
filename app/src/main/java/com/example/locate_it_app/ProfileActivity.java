@@ -12,8 +12,8 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -23,6 +23,8 @@ import java.util.Locale;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ProfileActivity extends AppCompatActivity {
+
+    private static final String TAG = "ProfileActivity";
 
     private CircleImageView ivProfilePicture;
     private TextView tvUserNameHeader, tvUserEmailHeader;
@@ -39,11 +41,9 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        // Initialize Firebase
-        mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
-        // vinculacion de vistas
         toolbar = findViewById(R.id.toolbar);
         ivProfilePicture = findViewById(R.id.iv_profile_picture);
         tvUserNameHeader = findViewById(R.id.tv_user_name_header);
@@ -55,7 +55,6 @@ public class ProfileActivity extends AppCompatActivity {
         tvCreationDate = findViewById(R.id.tv_creation_date);
         btnLogout = findViewById(R.id.btn_logout);
 
-        // Setup Toolbar
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
@@ -74,50 +73,57 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void loadUserProfile() {
         FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null) {
-            String uid = user.getUid();
-            String email = user.getEmail();
-            long creationTimestamp = user.getMetadata().getCreationTimestamp();
-            String creationDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date(creationTimestamp));
-
-            tvUserEmailHeader.setText(email);
-            tvInfoEmail.setText(email);
-            tvCreationDate.setText(creationDate);
-
-            db.collection("users").document(uid).get().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document != null && document.exists()) {
-                        String name = document.getString("nombre");
-                        String photoUrlString = document.getString("fotoPerfil");
-                        Long placesCount = document.getLong("placesCount");
-                        Long incidentsCount = document.getLong("incidentsCount");
-
-                        tvUserNameHeader.setText(name);
-                        tvInfoName.setText(name);
-
-                        if (placesCount != null) {
-                            tvPlacesCount.setText(String.valueOf(placesCount));
-                        }
-                        if (incidentsCount != null) {
-                            tvIncidentsCount.setText(String.valueOf(incidentsCount));
-                        }
-
-                        if (photoUrlString != null && !photoUrlString.isEmpty()) {
-                            Picasso.get()
-                                    .load(photoUrlString)
-                                    .placeholder(R.drawable.ic_launcher_background) // Un placeholder mientras carga
-                                    .error(R.drawable.ic_launcher_background) // Una imagen de error si falla
-                                    .into(ivProfilePicture);
-                        }
-
-                    } else {
-                        Log.d("ProfileActivity", "No such document");
-                    }
-                } else {
-                    Log.d("ProfileActivity", "get failed with ", task.getException());
-                }
-            });
+        if (user == null) {
+            // Si no hay usuario, no hay nada que cargar
+            return;
         }
+
+        String uid = user.getUid();
+        String email = user.getEmail();
+        long creationTimestamp = user.getMetadata().getCreationTimestamp();
+        String creationDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date(creationTimestamp));
+
+        // Poblar datos básicos
+        tvUserEmailHeader.setText(email);
+        tvInfoEmail.setText(email);
+        tvCreationDate.setText(creationDate);
+
+        // Cargar datos desde el documento del usuario en Firestore
+        db.collection("users").document(uid).get().addOnSuccessListener(document -> {
+            if (document.exists()) {
+                String name = document.getString("nombre");
+                String photoUrlString = document.getString("fotoPerfil");
+
+                tvUserNameHeader.setText(name);
+                tvInfoName.setText(name);
+
+                if (photoUrlString != null && !photoUrlString.isEmpty()) {
+                    Picasso.get().load(photoUrlString).into(ivProfilePicture);
+                } else {
+                    ivProfilePicture.setImageResource(R.drawable.ic_profile_user);
+                }
+            }
+        });
+
+        // --- ¡NUEVA LÓGICA PARA LOS CONTADORES! ---
+        // Contar lugares guardados
+        db.collection("places").whereEqualTo("userId", uid).get()
+            .addOnSuccessListener(queryDocumentSnapshots -> 
+                tvPlacesCount.setText(String.valueOf(queryDocumentSnapshots.size()))
+            )
+            .addOnFailureListener(e -> {
+                Log.e(TAG, "Error al contar lugares", e);
+                tvPlacesCount.setText("0");
+            });
+
+        // Contar incidentes reportados
+        db.collection("incidents").whereEqualTo("userId", uid).get()
+            .addOnSuccessListener(queryDocumentSnapshots -> 
+                tvIncidentsCount.setText(String.valueOf(queryDocumentSnapshots.size()))
+            )
+            .addOnFailureListener(e -> {
+                Log.e(TAG, "Error al contar incidentes", e);
+                tvIncidentsCount.setText("0");
+            });
     }
 }

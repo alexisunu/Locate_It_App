@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"><item
-    android:id="@+id/nav_share_place"
-    android:title="Compartir Lugares"
-    android:icon="@drawable/ic_menu_share" />
-    <item
-        android:id="@+id/nav_placeholder"
-        android:title=""
-        android:enabled="false"/>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_my_places"
         android:title="Mis Lugares"
         android:icon="@drawable/ic_menu_gallery" />
+    <item
+        android:id="@+id/nav_placeholder"
+        android:title="" 
+        android:enabled="false"/>
 </menu>

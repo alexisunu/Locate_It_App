@@ -2,16 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- PERMISOS DE UBICACIÓN E INTERNET -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-    <!-- ¡PERMISOS DE CÁMARA AÑADIDOS! -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
-
 
     <application
         android:allowBackup="true"
@@ -24,15 +20,6 @@
         android:theme="@style/Theme.Locate_It_App">
 
         <activity
-            android:name=".ReportarIncidente"
-            android:exported="false" />
-        <activity
-            android:name=".RegisterActivity"
-            android:exported="false" />
-        <activity
-            android:name=".GuardarLugar"
-            android:exported="false" />
-        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
@@ -40,12 +27,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".dashboard"
-            android:exported="false" />
-        <activity
-            android:name=".incidentes_mapa"
-            android:exported="false" />
 
         <activity android:name=".RegisterActivity" android:exported="false" />
         <activity android:name=".dashboard" android:exported="false" />
@@ -54,9 +35,11 @@
         <activity android:name=".incidentes_mapa" android:exported="false" />
         <activity android:name=".GuardarLugar" android:exported="false" />
         <activity android:name=".LugarDetalleActivity" android:exported="false" />
-
-        <!-- ¡NUEVA ACTIVIDAD AÑADIDA! -->
         <activity android:name=".ListaLugaresActivity" android:exported="false" />
+        <activity android:name=".IncidenteDetalleActivity" android:exported="false" />
+
+        <!-- ¡ACTIVIDAD DE REPORTAR INCIDENTE AÑADIDA! -->
+        <activity android:name=".ReportarIncidente" android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
