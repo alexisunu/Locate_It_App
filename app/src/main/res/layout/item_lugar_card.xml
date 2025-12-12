@@ -72,50 +72,68 @@
             android:layout_margin="16dp"
             android:textColor="@android:color/white"
             android:textStyle="bold"
-            tools:text="--" />
+            android:textSize="16sp"
+            tools:text="25°C" />
 
         <!-- Botones inferiores -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:paddingHorizontal="16dp"
+            android:paddingHorizontal="12dp"
             android:paddingVertical="12dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
+            <!-- Chip de Categoría -->
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_categoria"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Categoría"
                 android:textColor="#333333"
-                app:chipBackgroundColor="#FFFFFF"/>
+                android:textSize="12sp"
+                app:chipBackgroundColor="#FFFFFF"
+                app:chipCornerRadius="12dp" />
 
+            <!-- Espacio flexible -->
             <Space
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
+            <!-- Botón WhatsApp -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_whatsapp"
+                style="@style/Widget.MaterialComponents.Button.Icon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                android:padding="8dp"
+                app:icon="@android:drawable/ic_menu_share"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconTint="@android:color/white"
+                app:backgroundTint="#25D366"
+                app:cornerRadius="24dp"
+                android:contentDescription="Compartir por WhatsApp" />
+
+            <!-- Botón Ver en Mapa -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_ver_mapa"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ver en Mapa"
+                android:text="Ver Mapa"
                 android:textColor="#333333"
-                android:backgroundTint="#FFFFFF" />
-            
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_whatsapp"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                android:text="WhatsApp"
-                android:textColor="@android:color/white"
-                android:backgroundTint="#4CAF50"
-                app:icon="@drawable/ic_whatsapp"
-                app:iconTint="@android:color/white"/>
+                android:textSize="12sp"
+                android:textAllCaps="false"
+                app:backgroundTint="#FFFFFF"
+                app:cornerRadius="8dp" />
 
         </LinearLayout>
 
