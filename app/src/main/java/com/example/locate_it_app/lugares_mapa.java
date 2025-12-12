@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -23,6 +24,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import org.osmdroid.config.Configuration;
@@ -61,91 +63,34 @@ public class lugares_mapa extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        checkLocationPermission();
         setupButtonClickListeners();
-        loadUserPlaces();
-    }
-
-    private void checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            setupLocationOverlay();
-            getDeviceLocation();
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-        }
-    }
-
-    private void setupLocationOverlay() {
-        myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this), map);
-        myLocationOverlay.enableMyLocation();
-        map.getOverlays().add(myLocationOverlay);
-    }
-
-    private void getDeviceLocation() {
-        try {
-            fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
-                if (location != null) {
-                    currentLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
-                    map.getController().animateTo(currentLocation);
-                }
-            });
-        } catch (SecurityException e) {
-            Log.e(TAG, "Error de seguridad al obtener ubicación", e);
-        }
-    }
-
-    private void setupButtonClickListeners() {
-        FloatingActionButton fabCenterLocation = findViewById(R.id.fab_center_location);
-        fabCenterLocation.setOnClickListener(view -> {
-            if (currentLocation != null) {
-                map.getController().animateTo(currentLocation);
-            } else {
-                Toast.makeText(this, "Ubicación no disponible aún.", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        FloatingActionButton fabAddPlace = findViewById(R.id.fab_add_place);
-        fabAddPlace.setOnClickListener(view -> 
-            startActivity(new Intent(this, GuardarLugar.class)));
-
-        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
-        bottomNav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            // --- LÓGICA MODIFICADA ---
-            if (itemId == R.id.nav_share_place) {
-                Toast.makeText(this, "Compartir Lugar (próximamente)", Toast.LENGTH_SHORT).show();
-                return true;
-            } else if (itemId == R.id.nav_my_places) {
-                startActivity(new Intent(this, ListaLugaresActivity.class));
-                return true;
-            }
-            return false;
-        });
+        checkLocationPermission();
     }
 
     private void loadUserPlaces() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser == null) {
-            Log.e(TAG, "¡ERROR CRÍTICO! No hay usuario autenticado para cargar lugares.");
-            return;
-        }
-        String userId = currentUser.getUid();
+        if (currentUser == null) return;
 
-        db.collection("places").whereEqualTo("userId", userId).get()
-            .addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    if (task.getResult().isEmpty()) {
-                        Log.w(TAG, "No se encontró ningún lugar para este usuario.");
-                        return;
-                    }
+        String userId = currentUser.getUid();
+        Query query = db.collection("places").whereEqualTo("userId", userId);
+
+        query.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                map.getOverlays().clear();
+                setupLocationOverlay();
+
+                if (task.getResult().isEmpty()) {
+                    Log.w(TAG, "No se encontraron lugares");
+                } else {
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         addPlaceMarkerToMap(document);
                     }
-                    map.invalidate();
-                } else {
-                    Log.e(TAG, "FALLO la consulta a Firestore: ", task.getException());
                 }
-            });
+                map.invalidate();
+            } else {
+                Log.e(TAG, "FALLO la consulta de lugares: ", task.getException());
+            }
+        });
     }
 
     private void addPlaceMarkerToMap(QueryDocumentSnapshot document) {
@@ -162,59 +107,106 @@ public class lugares_mapa extends AppCompatActivity {
                 placeMarker.setPosition(placeLocation);
                 placeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
                 placeMarker.setTitle(nombre);
-
+                
                 placeMarker.setIcon(getIconForCategory(categoria));
 
                 placeMarker.setRelatedObject(lugarId);
                 placeMarker.setOnMarkerClickListener((marker, mapView) -> {
-                    String clickedLugarId = (String) marker.getRelatedObject();
                     Intent intent = new Intent(lugares_mapa.this, LugarDetalleActivity.class);
-                    intent.putExtra(LugarDetalleActivity.EXTRA_LUGAR_ID, clickedLugarId);
+                    intent.putExtra(LugarDetalleActivity.EXTRA_LUGAR_ID, (String) marker.getRelatedObject());
                     startActivity(intent);
                     return true;
                 });
                 map.getOverlays().add(placeMarker);
-            } else {
-                Log.w(TAG, "Documento " + lugarId + " OMITIDO por tener datos nulos.");
             }
         } catch (Exception e) {
             Log.e(TAG, "EXCEPCIÓN al procesar el documento: " + document.getId(), e);
         }
     }
-
+    
     private Drawable getIconForCategory(String category) {
         Drawable icon = ContextCompat.getDrawable(this, org.osmdroid.library.R.drawable.marker_default).mutate();
         int color;
-
         switch (category.toLowerCase()) {
-            case "casa":
-                color = Color.parseColor("#008F39"); // Verde
-                break;
-            case "trabajo":
-                color = Color.parseColor("#2A7FF3"); // Azul
-                break;
-            case "restaurante":
-                color = Color.parseColor("#F3632A"); // Naranja
-                break;
-            case "parque":
-                color = Color.parseColor("#4CAF50"); // Verde claro
-                break;
-            default:
-                color = Color.parseColor("#8E8E8E"); // Gris para "Otro"
-                break;
+            case "parque": color = Color.parseColor("#4CAF50"); break;
+            case "centro comercial": color = Color.parseColor("#FF9800"); break;
+            case "restaurante": color = Color.parseColor("#F44336"); break;
+            case "cafetería": color = Color.parseColor("#795548"); break;
+            case "mirador": color = Color.parseColor("#03A9F4"); break;
+            case "museo": color = Color.parseColor("#9C27B0"); break;
+            case "bar": color = Color.parseColor("#E91E63"); break;
+            case "playa": color = Color.parseColor("#00BCD4"); break;
+            case "montaña": color = Color.parseColor("#8BC34A"); break;
+            case "otro":
+            default: color = Color.parseColor("#8E8E8E"); break;
         }
-
         icon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
         return icon;
     }
 
+    private void checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            setupLocationOverlay();
+            getDeviceLocation();
+            loadUserPlaces(); // Carga inicial
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+        }
+    }
 
+    private void setupLocationOverlay() {
+        myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this), map);
+        myLocationOverlay.enableMyLocation();
+        map.getOverlays().add(myLocationOverlay);
+    }
+
+    private void getDeviceLocation() {
+        try {
+            fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
+                if (location != null) {
+                    currentLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
+                    map.getController().setZoom(18.0);
+                    map.getController().animateTo(currentLocation);
+                }
+            });
+        } catch (SecurityException e) {
+            Log.e(TAG, "Error de seguridad", e);
+        }
+    }
+
+    private void setupButtonClickListeners() {
+        FloatingActionButton fabAddPlace = findViewById(R.id.fab_add_place);
+        fabAddPlace.setOnClickListener(view -> 
+            startActivity(new Intent(this, GuardarLugar.class)));
+
+        FloatingActionButton fabCenterLocation = findViewById(R.id.fab_center_location);
+        fabCenterLocation.setOnClickListener(view -> {
+            if (currentLocation != null) {
+                map.getController().setZoom(18.0);
+                map.getController().animateTo(currentLocation);
+            } else {
+                getDeviceLocation();
+            }
+        });
+
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_my_places) {
+                startActivity(new Intent(this, ListaLugaresActivity.class));
+                return true;
+            }
+            return false;
+        });
+    }
+    
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            setupLocationOverlay();
-            getDeviceLocation();
+            checkLocationPermission();
+        } else {
+            loadUserPlaces();
         }
     }
 
@@ -222,6 +214,7 @@ public class lugares_mapa extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if (map != null) map.onResume();
+        loadUserPlaces();
     }
 
     @Override

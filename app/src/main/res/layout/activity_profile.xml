@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F5F5"
+    android:fitsSystemWindows="true"
     tools:context=".ProfileActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -48,7 +49,7 @@
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="168dp"
+                    android:layout_height="wrap_content"
                     android:padding="20dp">
 
                     <de.hdodenhof.circleimageview.CircleImageView
@@ -56,9 +57,7 @@
                         android:layout_width="80dp"
                         android:layout_height="80dp"
                         android:layout_centerVertical="true"
-                        android:src="@drawable/ic_launcher_background"
-                        app:civ_border_color="#4CAF50"
-                        app:civ_border_width="2dp" />
+                        android:src="@drawable/ic_profile_user" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -75,7 +74,7 @@
                             android:textColor="@android:color/black"
                             android:textSize="20sp"
                             android:textStyle="bold"
-                            tools:text="Juan Alimaña" />
+                            tools:text="Nombre de Usuario" />
 
                         <TextView
                             android:id="@+id/tv_user_email_header"
@@ -83,7 +82,7 @@
                             android:layout_height="wrap_content"
                             android:textColor="@android:color/darker_gray"
                             android:textSize="16sp"
-                            tools:text="juanalimaña@gmail.com" />
+                            tools:text="usuario@email.com" />
                     </LinearLayout>
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
@@ -92,7 +91,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:cardUseCompatPadding="true">
@@ -126,7 +125,6 @@
                             app:cardElevation="0dp"
                             app:cardBackgroundColor="#FAFAFA">
 
-
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -151,7 +149,7 @@
                                     android:id="@+id/tv_places_count"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="1"
+                                    android:text="0"
                                     android:textSize="18sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
@@ -190,7 +188,7 @@
                                     android:id="@+id/tv_incidents_count"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="1"
+                                    android:text="0"
                                     android:textSize="18sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
@@ -203,7 +201,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:cardUseCompatPadding="true">
@@ -237,7 +235,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:textColor="@android:color/black"
-                            tools:text="Juan Alimaña" />
+                            tools:text="Nombre de Usuario" />
                     </RelativeLayout>
 
                     <View
@@ -262,7 +260,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:textColor="@android:color/black"
-                            tools:text="juanalimaña@gmail.com" />
+                            tools:text="usuario@email.com" />
                     </RelativeLayout>
 
                     <View

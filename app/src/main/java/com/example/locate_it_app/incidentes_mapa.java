@@ -3,9 +3,13 @@ package com.example.locate_it_app;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -16,103 +20,158 @@ import androidx.core.content.ContextCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
-// La clase se llama como tu archivo
 public class incidentes_mapa extends AppCompatActivity {
+
+    private static final String TAG = "INCIDENTE_MAPA_DEBUG";
 
     private MapView map = null;
     private FusedLocationProviderClient fusedLocationClient;
     private MyLocationNewOverlay myLocationOverlay;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 2; // Usamos un código diferente por buena práctica
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 2;
     private GeoPoint currentLocation;
+
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // --- Configuración de OSMDroid ---
         Configuration.getInstance().load(getApplicationContext(), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
-
-        // --- Usamos tu layout ---
         setContentView(R.layout.incidentes_mapa);
 
-        // Inicializa el cliente de ubicación
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        // --- Inicialización del Mapa ---
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
         map.getController().setZoom(15.0);
 
-        checkLocationPermission();
-        setupButtonClickListeners(); // Llama al método para configurar los botones de esta activity
+        db = FirebaseFirestore.getInstance();
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        setupButtonClickListeners();
+        checkLocationPermission(); // Llamar a esto inicializará la carga de datos y ubicación
     }
 
     private void setupButtonClickListeners() {
-        // --- Botón de centrar ubicación (misma funcionalidad) ---
         FloatingActionButton fabCenterLocation = findViewById(R.id.fab_center_location);
         fabCenterLocation.setOnClickListener(view -> {
             if (currentLocation != null) {
+                map.getController().setZoom(18.0);
                 map.getController().animateTo(currentLocation);
-                Toast.makeText(this, "Centrando ubicación", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Ubicación no disponible aún.", Toast.LENGTH_SHORT).show();
+                getDeviceLocation();
             }
         });
 
-        // --- Botón para REGISTRAR INCIDENTE (apunta al nuevo ID) ---
         FloatingActionButton fabAddIncident = findViewById(R.id.fab_add_incident);
         fabAddIncident.setOnClickListener(view -> {
-            // Lógica futura para la activity de registrar incidente
-            Intent intent = new Intent(this, ReportarIncidente.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ReportarIncidente.class));
         });
-
-        // Ya no necesitamos un listener para la BottomNavigationView ya que no tiene items seleccionables.
     }
 
+    private void loadAllIncidents() {
+        Log.d(TAG, "Iniciando carga de todos los incidentes.");
+        db.collection("incidents").get()
+            .addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "Consulta de incidentes EXITOSA. Documentos encontrados: " + task.getResult().size());
+                    if (task.getResult().isEmpty()) {
+                        Log.w(TAG, "No se encontró ningún incidente en la base de datos.");
+                        return;
+                    }
+                    map.getOverlays().clear(); // Limpiar marcadores antiguos antes de añadir nuevos
+                    setupLocationOverlay(); // Volver a añadir el overlay de la ubicación del usuario
+                    
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        addIncidentMarkerToMap(document);
+                    }
+                    map.invalidate();
+                } else {
+                    Log.e(TAG, "FALLO la consulta de incidentes: ", task.getException());
+                }
+            });
+    }
 
-    // El resto de los métodos son idénticos a MapActivity y se pueden copiar directamente
+    private void addIncidentMarkerToMap(QueryDocumentSnapshot document) {
+        try {
+            String tipoIncidente = document.getString("tipo"); 
+            Double latitud = document.getDouble("latitud");
+            Double longitud = document.getDouble("longitud");
+            String incidenteId = document.getId();
+
+            if (tipoIncidente != null && latitud != null && longitud != null) {
+                GeoPoint incidentLocation = new GeoPoint(latitud, longitud);
+                Marker incidentMarker = new Marker(map);
+                incidentMarker.setPosition(incidentLocation);
+                incidentMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                incidentMarker.setTitle(tipoIncidente);
+                
+                Drawable icon = ContextCompat.getDrawable(this, org.osmdroid.library.R.drawable.marker_default).mutate();
+                icon.setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+                incidentMarker.setIcon(icon);
+
+                incidentMarker.setRelatedObject(incidenteId);
+                incidentMarker.setOnMarkerClickListener((marker, mapView) -> {
+                    String clickedIncidenteId = (String) marker.getRelatedObject();
+                    Intent intent = new Intent(incidentes_mapa.this, IncidenteDetalleActivity.class);
+                    intent.putExtra(IncidenteDetalleActivity.EXTRA_INCIDENTE_ID, clickedIncidenteId);
+                    startActivity(intent);
+                    return true;
+                });
+
+                map.getOverlays().add(incidentMarker);
+            } else {
+                Log.w(TAG, "Incidente " + incidenteId + " OMITIDO por tener datos nulos.");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "EXCEPCIÓN al procesar el incidente: " + document.getId(), e);
+        }
+    }
 
     private void checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            setupLocationOverlay();
-            getDeviceLocation();
+            Log.d(TAG, "Permiso de ubicación ya concedido.");
+            setupMapAndData();
         } else {
+            Log.d(TAG, "Solicitando permiso de ubicación.");
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
         }
+    }
+
+    // Nuevo método para organizar la inicialización
+    private void setupMapAndData(){
+        setupLocationOverlay();
+        getDeviceLocation();
+        loadAllIncidents();
     }
 
     private void setupLocationOverlay() {
         myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(this), map);
         myLocationOverlay.enableMyLocation();
-        myLocationOverlay.setDrawAccuracyEnabled(true);
         map.getOverlays().add(myLocationOverlay);
     }
 
     private void getDeviceLocation() {
         try {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                return;
-            }
             fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
                 if (location != null) {
                     currentLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
+                    map.getController().setZoom(18.0);
                     map.getController().animateTo(currentLocation);
-                } else {
-                    Log.d("incidentes_mapa", "La ubicación actual es nula.");
+                    Log.d(TAG, "Ubicación obtenida y mapa centrado.");
                 }
             });
         } catch (SecurityException e) {
-            Log.e("incidentes_mapa", "Error de seguridad", e);
+            Log.e(TAG, "Error de seguridad al obtener ubicación", e);
         }
     }
 
@@ -121,10 +180,13 @@ public class incidentes_mapa extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                setupLocationOverlay();
-                getDeviceLocation();
+                Log.d(TAG, "Permiso de ubicación concedido por el usuario.");
+                setupMapAndData();
             } else {
-                Toast.makeText(this, "El permiso de ubicación es necesario para mostrar el mapa.", Toast.LENGTH_LONG).show();
+                Log.w(TAG, "Permiso de ubicación denegado.");
+                Toast.makeText(this, "El permiso de ubicación es necesario para el mapa.", Toast.LENGTH_LONG).show();
+                // Aún si deniega, cargamos los incidentes, que no dependen de la ubicación del usuario.
+                loadAllIncidents(); 
             }
         }
     }
@@ -132,16 +194,14 @@ public class incidentes_mapa extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (map != null) {
-            map.onResume();
-        }
+        Log.d(TAG, "onResume - recargando incidentes.");
+        loadAllIncidents(); // Recargar los incidentes por si se añadió uno nuevo
+        if (map != null) map.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (map != null) {
-            map.onPause();
-        }
+        if (map != null) map.onPause();
     }
 }

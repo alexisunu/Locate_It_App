@@ -10,8 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,11 +61,14 @@ public class ReportarIncidente extends AppCompatActivity {
     private ActivityResultLauncher<String> requestLocationPermissionLauncher;
 
     // Vistas
-    private RadioGroup rgTipoIncidente;
     private Button btnReportarIncidente;
     private ImageView ivAgregarFotoIncidente, iconoCamara;
     private TextView txtAgregarFoto;
     private MapView mapIncidente;
+    private LinearLayout btnAccidente, btnCongestion, btnConstruccion, btnOtro;
+    private View selectedIncidentTypeView = null;
+    private String tipoIncidenteSeleccionado = null;
+
 
     // Variables de foto
     private Uri fotoUri;
@@ -139,12 +141,16 @@ public class ReportarIncidente extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         // ====== VINCULAR VISTAS ======
-        rgTipoIncidente = findViewById(R.id.rgTipoIncidente);
         btnReportarIncidente = findViewById(R.id.btnReportarIncidente);
         ivAgregarFotoIncidente = findViewById(R.id.ivAgregarFotoIncidente);
         iconoCamara = findViewById(R.id.iconoCamara);
         txtAgregarFoto = findViewById(R.id.txtAgregarFoto);
         mapIncidente = findViewById(R.id.mapIncidente);
+
+        btnAccidente = findViewById(R.id.btnAccidente);
+        btnCongestion = findViewById(R.id.btnCongestion);
+        btnConstruccion = findViewById(R.id.btnConstruccion);
+        btnOtro = findViewById(R.id.btnOtro);
 
         // ====== INICIALIZAR UBICACIÓN ======
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -159,6 +165,12 @@ public class ReportarIncidente extends AppCompatActivity {
         // ====== CONFIGURAR BOTONES ======
         findViewById(R.id.btnAgregarFotoIncidente).setOnClickListener(view -> solicitarPermisoCamara());
         btnReportarIncidente.setOnClickListener(view -> reportarIncidente());
+
+        // Listeners para los tipos de incidente
+        btnAccidente.setOnClickListener(v -> selectIncidentType(v, "Accidente"));
+        btnCongestion.setOnClickListener(v -> selectIncidentType(v, "Congestión"));
+        btnConstruccion.setOnClickListener(v -> selectIncidentType(v, "Construcción"));
+        btnOtro.setOnClickListener(v -> selectIncidentType(v, "Otro"));
     }
 
     private void inicializarCloudinary() {
@@ -257,12 +269,25 @@ public class ReportarIncidente extends AppCompatActivity {
         Toast.makeText(this, "Foto capturada", Toast.LENGTH_SHORT).show();
     }
 
+    // ====== LÓGICA DE SELECCIÓN DE TIPO DE INCIDENTE ======
+
+    private void selectIncidentType(View view, String tipoIncidente) {
+        // Reset previous selection
+        if (selectedIncidentTypeView != null) {
+            selectedIncidentTypeView.setBackgroundResource(R.drawable.incident_type_button_bg);
+        }
+
+        // Highlight new selection
+        view.setBackgroundResource(R.drawable.incident_type_button_bg_selected);
+        selectedIncidentTypeView = view;
+        tipoIncidenteSeleccionado = tipoIncidente;
+    }
+
     // ====== REPORTAR INCIDENTE ======
 
     private void reportarIncidente() {
         // Validar tipo de incidente
-        int selectedId = rgTipoIncidente.getCheckedRadioButtonId();
-        if (selectedId == -1) {
+        if (tipoIncidenteSeleccionado == null) {
             Toast.makeText(this, "Selecciona un tipo de incidente", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -286,8 +311,6 @@ public class ReportarIncidente extends AppCompatActivity {
             return;
         }
 
-        RadioButton selectedRadioButton = findViewById(selectedId);
-        String tipoIncidente = selectedRadioButton.getText().toString();
         String userId = currentUser.getUid();
 
         // Deshabilitar botón
@@ -295,7 +318,7 @@ public class ReportarIncidente extends AppCompatActivity {
         btnReportarIncidente.setText("Reportando...");
 
         // Subir foto y guardar incidente
-        subirFotoYGuardarIncidente(tipoIncidente, userId);
+        subirFotoYGuardarIncidente(tipoIncidenteSeleccionado, userId);
     }
 
     private void subirFotoYGuardarIncidente(String tipoIncidente, String userId) {

@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Este menú está intencionadamente vacío en sus items visibles -->
-    <!-- para dejar todo el espacio al botón central -->
     <item
-        android:id="@+id/nav_placeholder"
-        android:title=""
-        android:enabled="false"/>
+        android:id="@+id/nav_my_incidents"
+        android:icon="@drawable/ic_menu_share"
+        android:title="Mis Incidentes" />
 </menu>

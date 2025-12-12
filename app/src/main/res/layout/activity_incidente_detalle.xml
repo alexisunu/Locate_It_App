@@ -5,21 +5,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F5F5"
-    tools:context=".LugarDetalleActivity">
+    tools:context=".IncidenteDetalleActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimaryBlue"
-        android:fitsSystemWindows="true">
+        android:background="@color/red"> <!-- Color rojo para incidentes -->
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:title="Lugar Seleccionado"
+            app:title="Detalle del Incidente"
             app:titleTextColor="@android:color/white" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -47,7 +46,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <!-- Sección Superior: Usuario y Temperatura -->
+                    <!-- Sección Superior: Usuario -->
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -75,37 +74,26 @@
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
-                                tools:text="Juan Alimaña" />
+                                tools:text="Reportado por..." />
 
                             <TextView
                                 android:id="@+id/tvCategory"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                tools:text="Categoría" />
+                                tools:text="Tipo de Incidente" />
                         </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/tvTemperature"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:drawablePadding="4dp"
-                            android:gravity="center"
-                            tools:text="23°C"
-                            app:drawableStartCompat="@android:drawable/ic_menu_compass" />
 
                     </RelativeLayout>
 
-                    <!-- Imagen del Lugar -->
+                    <!-- Imagen del Incidente -->
                     <ImageView
                         android:id="@+id/ivPlaceImage"
                         android:layout_width="match_parent"
-                        android:layout_height="200dp"
+                        android:layout_height="220dp"
                         android:scaleType="centerCrop"
                         tools:src="@tools:sample/backgrounds/scenic" />
 
-                    <!-- Detalles del Lugar -->
+                    <!-- Detalles del Incidente -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -119,7 +107,7 @@
                             android:textColor="@android:color/black"
                             android:textSize="22sp"
                             android:textStyle="bold"
-                            tools:text="Nombre del lugar" />
+                            tools:text="Título del incidente" />
 
                         <TextView
                             android:id="@+id/tvPlaceAddress"
@@ -141,16 +129,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:lineSpacingExtra="4dp"
-                            tools:text="Descripción del lugar..." />
+                            tools:text="Descripción del incidente..." />
 
                     </LinearLayout>
-
                 </LinearLayout>
-
             </androidx.cardview.widget.CardView>
-
         </LinearLayout>
-
     </androidx.core.widget.NestedScrollView>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
