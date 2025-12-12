@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,6 +29,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Locale;
 
@@ -82,6 +85,9 @@ public class LugaresAdapter extends RecyclerView.Adapter<LugaresAdapter.LugarVie
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
         });
+
+        holder.btnWhatsapp.setOnClickListener(v ->
+                compartirPorWhatsApp(lugar, holder.tvDireccion.getText().toString()));
     }
 
     @Override
@@ -132,6 +138,59 @@ public class LugaresAdapter extends RecyclerView.Adapter<LugaresAdapter.LugarVie
         );
         queue.add(request);
     }
+    /**
+     * Comparte la información del lugar por WhatsApp
+     */
+    private void compartirPorWhatsApp(Lugar lugar, String direccion) {
+        // Construir mensaje personalizado
+        StringBuilder mensaje = new StringBuilder();
+        mensaje.append("Mira este lugar increíble *").append(lugar.getNombre()).append("*\n\n");
+
+        // Agregar categoría
+        mensaje.append("🏷Categoría: ").append(lugar.getCategoria()).append("\n\n");
+
+        // Agregar descripción si existe
+        if (lugar.getDescripcion() != null && !lugar.getDescripcion().isEmpty()) {
+            mensaje.append("ℹ️ ").append(lugar.getDescripcion()).append("\n\n");
+        }
+
+        // Agregar dirección si está disponible
+        if (direccion != null && !direccion.isEmpty() && !direccion.equals("Dirección no encontrada")) {
+            mensaje.append("📌 Dirección: ").append(direccion).append("\n\n");
+        }
+
+        // Agregar enlace a Google Maps
+        mensaje.append("🗺️ Ver ubicación en Google Maps:\n");
+        mensaje.append("https://maps.google.com/?q=")
+                .append(lugar.getLatitud())
+                .append(",")
+                .append(lugar.getLongitud());
+
+        try {
+            // Codificar el mensaje para URL
+            String mensajeCodificado = URLEncoder.encode(mensaje.toString(), "UTF-8");
+
+            // Crear URL de WhatsApp
+            String urlWhatsApp = "https://api.whatsapp.com/send?text=" + mensajeCodificado;
+
+            // Crear intent
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(urlWhatsApp));
+
+            // Intentar abrir WhatsApp
+            context.startActivity(intent);
+
+            Log.d(TAG, "Compartiendo lugar: " + lugar.getNombre());
+
+        } catch (UnsupportedEncodingException e) {
+            Log.e(TAG, "Error al codificar mensaje", e);
+            Toast.makeText(context, "Error al compartir", Toast.LENGTH_SHORT).show();
+        } catch (android.content.ActivityNotFoundException e) {
+            // WhatsApp no está instalado
+            Log.w(TAG, "WhatsApp no instalado, usando selector genérico");
+        }
+    }
+
 
     public static class LugarViewHolder extends RecyclerView.ViewHolder {
         ImageView ivBackground;
