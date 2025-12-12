@@ -101,6 +101,19 @@ public class incidentes_mapa extends AppCompatActivity {
             });
     }
 
+    private int getPinColorForIncidentType(String tipoIncidente) {
+        switch (tipoIncidente.toLowerCase()) {
+            case "accidente":
+                return Color.parseColor("#D32F2F"); // Rojo
+            case "congestión":
+                return Color.parseColor("#FFC107"); // Naranja
+            case "construcción":
+                return Color.parseColor("#03A9F4"); // Azul
+            default:
+                return Color.parseColor("#9E9E9E"); // Gris
+        }
+    }
+
     private void addIncidentMarkerToMap(QueryDocumentSnapshot document) {
         try {
             String tipoIncidente = document.getString("tipo"); 
@@ -116,7 +129,8 @@ public class incidentes_mapa extends AppCompatActivity {
                 incidentMarker.setTitle(tipoIncidente);
                 
                 Drawable icon = ContextCompat.getDrawable(this, org.osmdroid.library.R.drawable.marker_default).mutate();
-                icon.setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+                int color = getPinColorForIncidentType(tipoIncidente);
+                icon.setColorFilter(color, PorterDuff.Mode.SRC_IN);
                 incidentMarker.setIcon(icon);
 
                 incidentMarker.setRelatedObject(incidenteId);
